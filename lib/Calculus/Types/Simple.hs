@@ -25,29 +25,54 @@ module Calculus.Types.Simple (
 
 | This module provides simple types/terms for the calculus.
 
-The simple types/terms in question are those of the
-simply typed lambda calculus. 
-
 There is just one type: the arrow (i.e., function) type.
 For the terms, there are variables, abstractions, and applications.
-
-Suppose 'bool_type' is a type of the calculus:
-
->>> bool_type
-Bool
 
 Create some variables:
 
 >>> let x = mkVarTerm "x"
 >>> let y = mkVarTerm "y"
 
-Create an abstraction (e.g., the identity function):
+Register these terms with the calculus:
 
->>> let f = mkAbstrTerm "x" bool_type x
+>>> import qualified Calculus.Language.Syntax as Syntax
+>>> let x_term = Syntax.Var x
+>>> let y_term = Syntax.Var y
+
+By default, variables have a de Bruijn index of 0,
+which is displayed in brackets. For example:
+
+>>> x_term
+x[0]
+
+Ignore these indices.
+They are utilized (and updated) during evaluation,
+by the 'Calculus.Eval.Evaluator' module.
+
+Suppose 'bool_type' is a type of the calculus:
+
+>>> bool_type
+Bool
+
+Create an abstraction of type bool to bool (e.g., the identity function):
+
+>>> let f = mkAbstrTerm "x" bool_type x_term
+
+Register it with the calcuclus:
+
+>>> f_term = Syntax.Abstr f
+>>> f_term
+λx : Bool.(x[0])
 
 Create an application:
 
->>> let fx = mkAppl f x
+>>> let fy = mkApplTerm f_term y_term
+
+Register it with the calculus:
+
+>>> fy_term = Syntax.Appl fy
+>>> fy
+(λx : Bool.(x[0])) y[0]
 
 -}
 
