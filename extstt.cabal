@@ -14,7 +14,8 @@ library
   exposed-modules:     Calculus.Types.Simple, Calculus.Types.Base,
                        Calculus.Types.Option, Calculus.Types.Record, 
                        Calculus.Language.Syntax, Calculus.Language.Check,
-                       Calculus.Eval.Evaluator,
+                       Calculus.Language.Config, Calculus.Eval.DeBruijn, 
+                       Calculus.Eval.Evaluator, Calculus.Eval.Utils, 
                        Calculus.Extra.Examples
   -- other-modules:
   -- other-extensions:

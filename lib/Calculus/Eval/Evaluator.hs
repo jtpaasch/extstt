@@ -1,5 +1,6 @@
 module Calculus.Eval.Evaluator (
-    reduce
+    Result (..)
+  , reduce
   ) where
 
 {-
@@ -9,9 +10,6 @@ module Calculus.Eval.Evaluator (
 The main function is 'reduce'. Give it a context and a term,
 and it will reduce it as far as possible.
 
-Note that this evaluator does not type check the term.
-It assumes the term is correctly typed, and just reduces it.
-
 Suppose we have a context 'ctx' with some variables in it:
 
 >>> ctx
@@ -20,90 +18,38 @@ w : Bool, x : Bool, y : Bool
 Suppose 'fy_term' is a boolean identity function:
 
 >>> fy_term
-(λx : Bool.(x[0])) y[0]
+(λx : Bool.(x)) y
 
 Reduce it:
 
 >>> reduce ctx fy_term
-y[0]
+y
+
+Variable capture is avoided, since under the hood bound variables
+are nameless de Brujin indices. See the comments in the header of
+'Calculus.Eval.DeBruijn' for more information about this.
 
 -}
 
-import qualified Data.Map as Map
 import qualified Calculus.Types.Simple as S
 import qualified Calculus.Types.Base as B
 import qualified Calculus.Types.Option as O
 import qualified Calculus.Types.Record as R
 import qualified Calculus.Language.Syntax as Syntax
+import qualified Calculus.Language.Check as Check
+import qualified Calculus.Eval.DeBruijn as DeBruijn
 
 {- | For convenience/clarity. -}
-type Depth = Int
+type Depth = S.Index
 
-{- | A stack maps indices to variable names. -}
-type Stack = [(S.Index, S.Name)]
+{- | The results of evaluotion. -}
+data Result =
+    Err Check.Error
+  | Ok Syntax.Term
 
-{- | An empty stack. -}
-emptyStack :: Stack
-emptyStack = []
-
-{- | Push a name on the front of the stack, bump all other indices. -}
-pushOnStack :: S.Name -> Stack -> Stack
-pushOnStack name stack =
-  let stack' = map (\(k, v) -> (k + 1, v)) stack
-  in (1, name):stack'
-
-{- | Find the nearest (least) index for a given name. -}
-nearestBinding :: S.Name -> Stack -> Maybe S.Index
-nearestBinding name [] = Nothing
-nearestBinding name ((k, v):xs) = 
-  case v == name of
-    True -> Just k
-    False -> nearestBinding name xs
-
-{- | Recursively injects de Bruijn indices into a term. -}
-injectIndices :: Stack -> Syntax.Term -> Syntax.Term
-injectIndices stack term =
-  case term of
-    Syntax.Var term' ->
-      let name = S.nameOfVarTerm term'
-      in case nearestBinding name stack of
-        Just index -> Syntax.Var $ S.mkVarTermWithIndex name index
-        Nothing -> term  
-    Syntax.Abstr term' ->
-      let name = S.boundNameInAbstr term'
-          binding = S.typeOfBoundNameInAbstr term'
-          body = S.bodyOfAbstr term'
-          stack' = pushOnStack name stack
-          body' = injectIndices stack' body
-      in Syntax.Abstr $ S.mkAbstrTerm name binding body'
-    Syntax.Appl term' ->
-      let func = S.funcTermOfAppl term'
-          arg = S.argTermOfAppl term'
-          func' = injectIndices stack func
-          arg' = injectIndices stack arg
-      in Syntax.Appl $ S.mkApplTerm func' arg'
-    Syntax.Base _ -> term
-    Syntax.Option term' ->
-      case O.selectionOf term' of
-        O.None -> term
-        O.Precisely body ->
-          let binding = O.typeOfSelection term'
-              body' = injectIndices stack body
-          in Syntax.Option $ O.mkOptionTerm (O.Precisely body') binding
-    Syntax.Record term' ->
-      let injectInto field =
-            let label = R.labelOfField field
-                value = R.valueOfField field
-                value' = injectIndices stack value
-            in R.mkField value' label
-          fields = R.fieldsOfRecordTerm term'
-          fields' = map injectInto fields
-          recordType = R.typeOfRecordTerm term'
-      in Syntax.Record $ R.mkRecordTerm fields' recordType
-
-{- | Triggers the injection of de Bruijn indices into a term. -}
-indices :: Syntax.Term -> Syntax.Term
-indices term = injectIndices emptyStack term
+instance Show Result where
+  show (Err e) = "Error. " ++ (show e)
+  show (Ok term) = "Ok. " ++ (show term)
 
 {- | Substitute a replacement in a given term. -}
 subst :: Depth -> Syntax.Term -> Syntax.Term -> Syntax.Term
@@ -165,7 +111,10 @@ reduceFixpoint ctx term =
     Nothing -> term
 
 {- | Reduce a term as far as possible, given a context. -}
-reduce :: Syntax.Context -> Syntax.Term -> Syntax.Term
+reduce :: Syntax.Context -> Syntax.Term -> Result
 reduce ctx term =
-  let indexed_term = indices term
-  in reduceFixpoint ctx indexed_term
+  case Check.getType ctx term of
+    Check.Err e -> Err e
+    Check.Ok _ -> 
+      let indexed_term = DeBruijn.indices term
+      in Ok $ reduceFixpoint ctx indexed_term

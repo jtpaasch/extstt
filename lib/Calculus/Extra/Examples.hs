@@ -9,6 +9,7 @@ import qualified Calculus.Types.Record as R
 import qualified Calculus.Language.Syntax as Syntax
 import qualified Calculus.Language.Check as Check
 import qualified Calculus.Eval.Evaluator as Eval
+import qualified Calculus.Eval.Utils as Utils
 
 -- Create a "Bool" base type, with one inhabitant ("true").
 boolT = B.mkBaseType "Bool"
@@ -166,5 +167,9 @@ zSatSoc_wkndSport = R.mkRecordTerm [sat_dayField, z_socField] wkndSportT
 zSatSoc_wkndSport_term = Syntax.Record zSatSoc_wkndSport -- Won't type check.
 -- Check.getType ctx zSatSoc_wkndSport_term
 
+-- Find all free variables in a term.
+free = Utils.freeVars g_term
 
+-- Close a term by abstracting all free variables:
+closed_g = Utils.close ctx g_term
 

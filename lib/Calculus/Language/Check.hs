@@ -20,18 +20,23 @@ w : Bool, x : Bool, y : Bool
 Suppose we have a boolean identity function:
 
 >>> f_term
-λx : Bool.(x[0])
+λx : Bool.(x)
 
 Check it's type:
 
 >>> getType ctx f_term
 Ok. Bool -> Bool
 
-Suppose 'z_term' is a variable that is not in the context.
-It won't type check:
+Type checking errors are reported. For example, 
+suppose 'z_term' is a variable:
+
+>>> z_term
+z
+
+Since 'z' is not declared in the context, it won't type check:
 
 >>> getType ctx z_term
-Error. No type specified in context for: z[0]
+Error. No type specified in context for: z
 
 -}
 

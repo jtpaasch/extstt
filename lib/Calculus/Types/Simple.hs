@@ -39,16 +39,6 @@ Register these terms with the calculus:
 >>> let x_term = Syntax.Var x
 >>> let y_term = Syntax.Var y
 
-By default, variables have a de Bruijn index of 0,
-which is displayed in brackets. For example:
-
->>> x_term
-x[0]
-
-Ignore these indices.
-They are utilized (and updated) during evaluation,
-by the 'Calculus.Eval.Evaluator' module.
-
 Suppose 'bool_type' is a type of the calculus:
 
 >>> bool_type
@@ -62,7 +52,7 @@ Register it with the calcuclus:
 
 >>> f_term = Syntax.Abstr f
 >>> f_term
-λx : Bool.(x[0])
+λx : Bool.(x)
 
 Create an application:
 
@@ -72,9 +62,11 @@ Register it with the calculus:
 
 >>> fy_term = Syntax.Appl fy
 >>> fy
-(λx : Bool.(x[0])) y[0]
+(λx : Bool.(x)) y
 
 -}
+
+import qualified Calculus.Language.Config as Config
 
 {- | For convenience. -}
 type Name = String
@@ -112,7 +104,10 @@ data VarTerm = VarTerm {
 
 instance Show VarTerm where
   show term =
-    (nameOfVarTerm term) ++ "[" ++ (show $ indexOfVarTerm term) ++ "]"
+    let output = nameOfVarTerm term
+    in case Config.showDeBruijnIndices of
+      True -> output ++ "[" ++ (show $ indexOfVarTerm term) ++ "]"
+      False -> output
 
 {- | Gets the name of a variable. -}
 nameOfVarTerm :: VarTerm -> Name
