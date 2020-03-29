@@ -42,7 +42,7 @@ import qualified Calculus.Eval.DeBruijn as DeBruijn
 {- | For convenience/clarity. -}
 type Depth = S.Index
 
-{- | The results of evaluotion. -}
+{- | The results of evaluation. -}
 data Result =
     Err Check.Error
   | Ok Syntax.Term
