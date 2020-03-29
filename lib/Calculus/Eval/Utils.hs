@@ -54,7 +54,18 @@ findFreeVars acc term =
       let func = S.funcTermOfAppl term'
           arg = S.argTermOfAppl term'
       in (findFreeVars acc func) ++ (findFreeVars acc arg)
-    _ -> acc -- TO DO: FINISH OTHER TYPES
+    Syntax.Base _ -> acc
+    Syntax.Option term' ->
+      case O.selectionOf term' of
+        O.None -> acc
+        O.Precisely body -> findFreeVars acc body
+    Syntax.Record term' ->
+      let getFree field =
+            let value = R.valueOfField field
+            in findFreeVars acc value 
+          fields = R.fieldsOfRecordTerm term'
+          vars = map getFree fields
+       in concat vars
 
 {- | Find all free variables in a term. -}
 freeVars :: Syntax.Term -> [Syntax.Term]
