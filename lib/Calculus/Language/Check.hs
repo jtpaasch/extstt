@@ -135,7 +135,7 @@ getType ctx term =
             Ok binding' ->
               let typeParameter = O.parameterOfOptionType binding
               in case binding' == typeParameter of
-                True -> Ok $ Syntax.OptionT (O.mkOptionType binding')
+                True -> Ok $ Syntax.OptionT binding
                 False -> Err $ BadSelection term binding' typeParameter
     Syntax.Record term' ->
       let binding = R.typeOfRecordTerm term'
