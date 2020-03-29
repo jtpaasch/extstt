@@ -1,0 +1,23 @@
+cabal-version:       2.4
+name:                extstt
+version:             0.1.0.0
+synopsis:            Simply typed lambda calculus with some extra types.
+homepage:            https://github.com/jtpaasch/lambda
+license:             BSD-3-Clause
+license-file:        LICENSE
+author:              JT Paasch
+maintainer:          jt.paasch@gmail.com
+category:            Language
+extra-source-files:  README.md
+
+library
+  exposed-modules:     Calculus.Types.Simple, Calculus.Types.Base,
+                       Calculus.Types.Option, Calculus.Types.Record, 
+                       Calculus.Language.Syntax, Calculus.Language.Check,
+                       Calculus.Eval.Evaluator,
+                       Calculus.Extra.Examples
+  -- other-modules:
+  -- other-extensions:
+  build-depends:       base ^>=4.13.0.0, containers
+  hs-source-dirs:      lib
+  default-language:    Haskell2010
