@@ -56,6 +56,8 @@ data Error =
     -- ^For when an application's left side isn't an abstraction.
   | BadArgType Syntax.Term Syntax.Type Syntax.Type
     -- ^For when an argument to a function doesn't have the right type.
+  | BadSelection Syntax.Term Syntax.Type Syntax.Type
+    -- ^For when an optional value is the wrong type.
   | WrongFields Syntax.Term Syntax.Type
     -- ^For when a record has the wrong fields.
   | BadField Syntax.Term R.Name Syntax.Term Syntax.Type Syntax.Type
@@ -70,6 +72,10 @@ instance Show Error where
     "Argument has type '" ++ (show argBinding) ++ "' " ++
     "but must have type '" ++ (show funcInputBinding) ++ "' " ++
     "in: " ++ (show term)
+  show (BadSelection term selectionType optionType) =
+    "The option '" ++ (show term) ++ "' " ++
+    "has type '" ++ (show selectionType) ++ "' " ++
+    "but it should have type '" ++ (show optionType) ++ "'"
   show (WrongFields term binding) =
     "Wrong fields in: " ++ (show term) ++ " : " ++ (show binding)
   show (BadField record name value valueType labelType) =
@@ -126,7 +132,11 @@ getType ctx term =
         O.Precisely body -> 
           case getType ctx body of
             Err e -> Err e
-            Ok binding' -> Ok $ Syntax.OptionT (O.mkOptionType binding')
+            Ok binding' ->
+              let typeParameter = O.parameterOfOptionType binding
+              in case binding' == typeParameter of
+                True -> Ok $ Syntax.OptionT (O.mkOptionType binding')
+                False -> Err $ BadSelection term binding' typeParameter
     Syntax.Record term' ->
       let binding = R.typeOfRecordTerm term'
           labels = R.labelsOfRecordType binding
