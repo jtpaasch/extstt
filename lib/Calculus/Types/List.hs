@@ -42,7 +42,7 @@ Suppose 'emptyList_term' is an empty list term.
 
 Cons 'true_term' with it, and make a new list:
 
->>> let cons'd_list = Cons true_term emptList_term
+>>> let cons'd_list = Cons true_term emptyList_term
 >>> let otherBoolList = mkListTerm cons'd_list boolListT
 >>> otherBoolList
 true, []
