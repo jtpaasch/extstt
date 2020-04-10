@@ -1,7 +1,7 @@
 # `extstt`
 
 Simply typed lambda calculus extended with custom base types,
-option types, records, and lists.
+options, records, and lists.
 
 
 ## Build
@@ -27,9 +27,13 @@ Download the project, e.g.:
     git clone https://..../extstt.git
     cd extstt 
 
-To build the library:
+To build the library (using `cabal` 3.0+):
 
-    cabal new-build
+    cabal build
+
+Or:
+
+    make
 
 To import a particular library module into GHCi:
 
@@ -41,6 +45,9 @@ To load all libraries into GHCi:
 
 To clean:
 
-    cabal new-clean
+    cabal clean
 
+Or:
+
+    make clean
 
