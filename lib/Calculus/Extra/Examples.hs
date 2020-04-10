@@ -6,6 +6,7 @@ import qualified Calculus.Types.Simple as S
 import qualified Calculus.Types.Base as B
 import qualified Calculus.Types.Option as O
 import qualified Calculus.Types.Record as R
+import qualified Calculus.Types.List as L
 import qualified Calculus.Language.Syntax as Syntax
 import qualified Calculus.Language.Check as Check
 import qualified Calculus.Eval.Evaluator as Eval
@@ -173,3 +174,39 @@ free = Utils.freeVars g_term
 -- Close a term by abstracting all free variables:
 closed_g = Utils.close ctx g_term
 
+-- Create a bool list type.
+boolListT = L.mkListType bool_type
+
+-- Register it with the calculus syntax:
+boolList_type = Syntax.ListT boolListT
+
+-- Create an empty bool list, and register it with the syntax
+emptyBoolList = L.mkListTerm L.Empty boolListT
+emptyBoolList_term = Syntax.List emptyBoolList
+
+-- Cons a 'true_term' on the front of it, and register it with the syntax.
+cons'd_list = L.Cons true_term emptyBoolList_term
+otherBoolList = L.mkListTerm cons'd_list boolListT
+otherBoolList_term = Syntax.List otherBoolList
+
+-- Cons a weekend term on the front of a bool list. 
+cons'd_badList = L.Cons sun_term otherBoolList_term
+badList = L.mkListTerm cons'd_badList boolListT
+badList_term = Syntax.List badList -- Won't type check.
+-- Check.getType ctx badList_term
+
+-- Build a list with a variable in it.
+cons'd_w_list = L.Cons w_term otherBoolList_term
+w_boolList = L.mkListTerm cons'd_w_list boolListT
+w_boolList_term = Syntax.List w_boolList
+
+-- Make an abstraction with it.
+r = S.mkAbstrTerm "w" bool_type w_boolList_term
+r_term = Syntax.Abstr r
+free_in_r = Utils.freeVars r_term
+rx = S.mkApplTerm r_term x_term
+rx_term = Syntax.Appl rx
+
+-- Check it's type, and evaluate it:
+-- Check.getType ctx rx_term
+-- Eval.reduce ctx rx_term

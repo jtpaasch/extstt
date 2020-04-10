@@ -1,5 +1,5 @@
 build:
-	cabal new-build
+	cabal build
 
 clean:
-	cabal new-clean
+	cabal clean

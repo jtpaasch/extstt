@@ -12,7 +12,8 @@ extra-source-files:  README.md
 
 library
   exposed-modules:     Calculus.Types.Simple, Calculus.Types.Base,
-                       Calculus.Types.Option, Calculus.Types.Record, 
+                       Calculus.Types.Option, Calculus.Types.Record,
+                       Calculus.Types.List, 
                        Calculus.Language.Syntax, Calculus.Language.Check,
                        Calculus.Language.Config, Calculus.Eval.DeBruijn, 
                        Calculus.Eval.Evaluator, Calculus.Eval.Utils, 

@@ -35,6 +35,7 @@ import qualified Calculus.Types.Simple as S
 import qualified Calculus.Types.Base as B
 import qualified Calculus.Types.Option as O
 import qualified Calculus.Types.Record as R
+import qualified Calculus.Types.List as L
 import qualified Calculus.Language.Syntax as Syntax
 import qualified Calculus.Eval.DeBruijn as DeBruijn
 
@@ -66,6 +67,11 @@ findFreeVars acc term =
           fields = R.fieldsOfRecordTerm term'
           vars = map getFree fields
        in concat vars
+    Syntax.List term' ->
+      case L.constructorOf term' of
+        L.Empty -> acc
+        L.Cons head tail ->
+          (findFreeVars acc head) ++ (findFreeVars acc tail)
 
 {- | Find all free variables in a term. -}
 freeVars :: Syntax.Term -> [Syntax.Term]

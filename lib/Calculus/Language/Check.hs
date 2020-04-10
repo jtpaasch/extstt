@@ -46,6 +46,7 @@ import qualified Calculus.Types.Simple as S
 import qualified Calculus.Types.Base as B
 import qualified Calculus.Types.Option as O
 import qualified Calculus.Types.Record as R
+import qualified Calculus.Types.List as L
 import qualified Calculus.Language.Syntax as Syntax
 
 {- | Types of errors that can occur during type checking. -}
@@ -62,6 +63,8 @@ data Error =
     -- ^For when a record has the wrong fields.
   | BadField Syntax.Term R.Name Syntax.Term Syntax.Type Syntax.Type
     -- ^For when the value of a field in a record has the wrong type.
+  | BadHead Syntax.Term Syntax.Term Syntax.Type Syntax.Type
+    -- ^For when the head of a list is the wrong type.
 
 instance Show Error where
   show (NoType term) = 
@@ -82,7 +85,11 @@ instance Show Error where
     "Field '" ++ name ++ " = " ++ (show value) ++ "' " ++
     "has type '" ++ (show valueType) ++ "' but should " ++
     "have type '" ++ (show labelType) ++ "' in: " ++
-    (show record) 
+    (show record)
+  show (BadHead list head headType listTypeParameter) =
+    "Head '" ++ (show head) ++ "' has type '" ++ (show headType) ++ "' " ++
+    "but should have type '" ++ (show listTypeParameter) ++ "' in: " ++
+    (show list)
 
 {- | A result type for the type checker to return. -}
 data Result =
@@ -162,3 +169,15 @@ getType ctx term =
           in case checkValues fields of
             Left e -> Err e
             Right _ -> Ok $ Syntax.RecordT binding
+    Syntax.List term' ->
+      let binding = L.typeOfTerm term'
+      in case L.constructorOf term' of
+        L.Empty -> Ok $ Syntax.ListT binding
+        L.Cons head tail ->
+          case getType ctx head of
+            Err e -> Err e
+            Ok binding' ->
+              let typeParameter = L.parameterOfListType binding
+              in case binding' == typeParameter of
+                False -> Err $ BadHead term head binding' typeParameter
+                True -> getType ctx tail

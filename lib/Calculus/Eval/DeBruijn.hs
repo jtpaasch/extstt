@@ -73,6 +73,7 @@ import qualified Calculus.Types.Simple as S
 import qualified Calculus.Types.Base as B
 import qualified Calculus.Types.Option as O
 import qualified Calculus.Types.Record as R
+import qualified Calculus.Types.List as L
 import qualified Calculus.Language.Syntax as Syntax
 
 {- | A stack maps indices to variable names. -}
@@ -136,6 +137,14 @@ injectIndices stack term =
           fields' = map injectInto fields
           recordType = R.typeOfRecordTerm term'
       in Syntax.Record $ R.mkRecordTerm fields' recordType
+    Syntax.List term' ->
+      case L.constructorOf term' of
+        L.Empty -> term
+        L.Cons head tail ->
+          let binding = L.typeOfTerm term'
+              head' = injectIndices stack head
+              tail' = injectIndices stack tail
+          in Syntax.List $ L.mkListTerm (L.Cons head' tail') binding
 
 {- | Triggers the injection of de Bruijn indices into a term. -}
 indices :: Syntax.Term -> Syntax.Term

@@ -1,7 +1,7 @@
 # `extstt`
 
 Simply typed lambda calculus extended with custom base types,
-option types, and records.
+option types, records, and lists.
 
 
 ## Build

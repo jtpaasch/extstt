@@ -18,6 +18,7 @@ import qualified Calculus.Types.Simple as S
 import qualified Calculus.Types.Base as B
 import qualified Calculus.Types.Option as O
 import qualified Calculus.Types.Record as R
+import qualified Calculus.Types.List as L
 
 {- | For convenience. -}
 type Name = String
@@ -28,6 +29,7 @@ data Type =
   | BaseT B.BaseType
   | OptionT (O.OptionType Type)
   | RecordT (R.RecordType Type)
+  | ListT (L.ListType Type)
   deriving (Eq, Ord)
 
 instance Show Type where
@@ -35,6 +37,7 @@ instance Show Type where
   show (BaseT binding) = show binding
   show (OptionT binding) = show binding
   show (RecordT binding) = show binding
+  show (ListT binding) = show binding
 
 {- | The terms allowed in the calculus. -}
 data Term =
@@ -44,6 +47,7 @@ data Term =
   | Base B.BaseTerm
   | Option (O.OptionTerm Term Type)
   | Record (R.RecordTerm Term Type)
+  | List (L.ListTerm Term Term Type)
   deriving (Eq, Ord)
 
 instance Show Term where
@@ -53,6 +57,7 @@ instance Show Term where
   show (Appl term) = show term
   show (Option term) = show term
   show (Record term) = show term
+  show (List term) = show term
 
 {- | A context is a mapping of names to types. -}
 data Context = Context (Map.Map Name Type)

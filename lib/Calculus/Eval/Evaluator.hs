@@ -15,7 +15,7 @@ Suppose we have a context 'ctx' with some variables in it:
 >>> ctx
 w : Bool, x : Bool, y : Bool
 
-Suppose 'fy_term' is a boolean identity function:
+Suppose 'fy_term' applies a boolean identity function to 'y':
 
 >>> fy_term
 (λx : Bool.(x)) y
@@ -35,6 +35,7 @@ import qualified Calculus.Types.Simple as S
 import qualified Calculus.Types.Base as B
 import qualified Calculus.Types.Option as O
 import qualified Calculus.Types.Record as R
+import qualified Calculus.Types.List as L
 import qualified Calculus.Language.Syntax as Syntax
 import qualified Calculus.Language.Check as Check
 import qualified Calculus.Eval.DeBruijn as DeBruijn
@@ -90,6 +91,14 @@ subst depth term replacement =
           fields' = map substInto fields
           recordType = R.typeOfRecordTerm term'
       in Syntax.Record $ R.mkRecordTerm fields' recordType
+    Syntax.List term' ->
+      case L.constructorOf term' of
+        L.Empty -> term
+        L.Cons head tail ->
+          let binding = L.typeOfTerm term'
+              head' = subst depth head replacement
+              tail' = subst depth tail replacement
+          in Syntax.List $ L.mkListTerm (L.Cons head' tail') binding
 
 {- | Perform one round of beta reduction. -}
 reduceOnce :: Syntax.Context -> Syntax.Term -> Maybe Syntax.Term
